@@ -1,8 +1,11 @@
 import logging
 import os
 import re
+import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
+from flask import Flask
+import threading
 
 # Set up logging
 logging.basicConfig(
@@ -46,7 +49,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     result = safe_eval(text)
     
     if result is not None:
-        # Format result to avoid scientific notation for large numbers if possible
         if isinstance(result, float) and result.is_integer():
             result = int(result)
         
@@ -58,24 +60,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text(f"Result: `{result}`", reply_markup=reply_markup, parse_mode='Markdown')
-    else:
-        # If it's not a valid math expression, don't respond to avoid spamming
-        pass
 
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
     if query.data.startswith("copy_"):
-        # Since Telegram bots cannot directly write to user's clipboard,
-        # we provide a message that is easy to copy (monospace) or just acknowledge.
-        # Most users know that clicking monospace text copies it in many TG clients.
         await query.message.reply_text("The result is in monospace above. Tap it to copy!")
     elif query.data == "delete":
         await query.message.delete()
-
-from flask import Flask
-import threading
 
 app = Flask('')
 
@@ -86,9 +79,9 @@ def home():
 def run_flask():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
-if __name__ == '__main__':
+async def main():
     # Start Flask in a separate thread
-    threading.Thread(target=run_flask).start()
+    threading.Thread(target=run_flask, daemon=True).start()
     
     application = ApplicationBuilder().token(TOKEN).build()
     
@@ -97,4 +90,17 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(button_callback))
     
     print("Bot is starting...")
-    application.run_polling()
+    # Initialize and start the application
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling()
+    
+    # Keep the bot running
+    while True:
+        await asyncio.sleep(3600)
+
+if __name__ == '__main__':
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
