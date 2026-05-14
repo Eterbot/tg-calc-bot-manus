@@ -42,9 +42,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⏫ Exponentiation (^)\n\n"
         "💡 Example: 2+3*5 or (10+2)^2"
     )
-    await update.message.reply_text(welcome_text)
+    if update.message:
+        await update.message.reply_text(welcome_text)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message or not update.message.text:
+        return
+        
     text = update.message.text
     result = safe_eval(text)
     
