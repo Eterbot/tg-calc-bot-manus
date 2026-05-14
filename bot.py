@@ -18,7 +18,7 @@ TOKEN = os.getenv("BOT_TOKEN", "8628273502:AAGttyvbz9KcGQyPq7EWe35TugWSNO9oOL4")
 # Custom Emoji IDs provided by user
 HEART_EMOJI_ID = "6318764724917903167" # Heart for Copy button
 CROSS_EMOJI_ID = "6239783660778693388" # Cross for Delete button
-FIRE_EMOJI_ID = "6239783660778693388"  # Using this for the fire emoji in message as per previous setup
+FIRE_EMOJI_ID = "6239783660778693388"  # Fire emoji for message
 
 def format_number(number):
     """Formats a number with thousand separators."""
@@ -74,22 +74,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         formatted_result = format_number(result)
         
         # Format the display text with the custom emoji
-        # Using HTML to support the custom emoji tag
         display_text = f"<tg-emoji emoji-id=\"{FIRE_EMOJI_ID}\">🔥</tg-emoji> <code>{expr} = {formatted_result}</code>"
         
-        # Create keyboard with copy and delete buttons using icon_custom_emoji_id
-        # This is a new feature in Telegram Bot API that allows custom emojis in buttons
+        # Create keyboard with copy and delete buttons
+        # Since python-telegram-bot might not have icon_custom_emoji_id as a direct argument yet,
+        # we use api_kwargs to pass it to the Telegram Bot API.
         keyboard = [
             [
                 InlineKeyboardButton(
                     text="Copy", 
                     copy_text=CopyTextButton(text=str(result)),
-                    icon_custom_emoji_id=HEART_EMOJI_ID
+                    api_kwargs={"icon_custom_emoji_id": HEART_EMOJI_ID}
                 ),
                 InlineKeyboardButton(
                     text="Delete", 
                     callback_data="delete",
-                    icon_custom_emoji_id=CROSS_EMOJI_ID
+                    api_kwargs={"icon_custom_emoji_id": CROSS_EMOJI_ID}
                 )
             ]
         ]
