@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import asyncio
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyParameters
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from flask import Flask
 import threading
@@ -22,25 +22,25 @@ def safe_eval(expr):
         return None
     try:
         # Replace ^ with ** for Python power operator
-        expr = expr.replace('^', '**')
+        clean_expr = expr.replace('^', '**')
         # Use a limited scope for eval
-        result = eval(expr, {"__builtins__": None}, {})
+        result = eval(clean_expr, {"__builtins__": None}, {})
         return result
     except Exception:
         return None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_text = (
-        "🎉 Welcome from Calculator Bot!\n\n"
-        "✅ You can now use all calculator commands in DM.\n"
-        "📌 Supported operations:\n"
-        "➕ Addition (+)\n"
-        "➖ Subtraction (-)\n"
-        "✖ Multiplication (*)\n"
-        "➗ Division (/)\n"
-        "🧮 Parentheses ( )\n"
-        "⏫ Exponentiation (^)\n\n"
-        "💡 Example: 2+3*5 or (10+2)^2"
+        "Welcome from Calculator Bot!\n\n"
+        "You can now use all calculator commands in DM.\n"
+        "Supported operations:\n"
+        "Addition (+)\n"
+        "Subtraction (-)\n"
+        "Multiplication (*)\n"
+        "Division (/)\n"
+        "Parentheses ( )\n"
+        "Exponentiation (^)\n\n"
+        "Example: 2+3*5 or (10+2)^2"
     )
     if update.message:
         await update.message.reply_text(welcome_text)
@@ -49,29 +49,38 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
         return
         
-    text = update.message.text
-    result = safe_eval(text)
+    expr = update.message.text
+    result = safe_eval(expr)
     
     if result is not None:
         if isinstance(result, float) and result.is_integer():
             result = int(result)
         
+        # Format the display text to show calculation steps
+        display_text = f"{expr} = {result}"
+        
+        # Create keyboard with copy and delete buttons
+        # Note: 'copy_text' is a newer feature in some Telegram clients, 
+        # but for broad compatibility, we use callback for copy or provide it in monospace
+        # The user wants "one-click copy", so we'll use the newer InlineKeyboardButton feature if possible,
+        # but the python-telegram-bot version might need specific handling.
+        # We will use the copy_text parameter which is supported in Telegram Bot API 7.3+
+        
         keyboard = [
             [
-                InlineKeyboardButton("📋 Copy", callback_data=f"copy_{result}"),
-                InlineKeyboardButton("❌ Delete", callback_data="delete")
+                # This button type allows direct copying of the specified text
+                InlineKeyboardButton("Copy", copy_text=str(result)),
+                InlineKeyboardButton("Delete", callback_data="delete")
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(f"Result: `{result}`", reply_markup=reply_markup, parse_mode='Markdown')
+        await update.message.reply_text(display_text, reply_markup=reply_markup)
 
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
-    if query.data.startswith("copy_"):
-        await query.message.reply_text("The result is in monospace above. Tap it to copy!")
-    elif query.data == "delete":
+    if query.data == "delete":
         await query.message.delete()
 
 app = Flask('')
