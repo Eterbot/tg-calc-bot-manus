@@ -15,10 +15,6 @@ logging.basicConfig(
 
 # Configuration
 TOKEN = os.getenv("BOT_TOKEN", "8628273502:AAGttyvbz9KcGQyPq7EWe35TugWSNO9oOL4")
-# Custom Emoji IDs provided by user
-HEART_EMOJI_ID = "6318764724917903167" # Heart for Copy button
-CROSS_EMOJI_ID = "6239783660778693388" # Cross for Delete button
-FIRE_EMOJI_ID = "6239783660778693388"  # Fire emoji for message
 
 def format_number(number):
     """Formats a number with thousand separators."""
@@ -44,7 +40,7 @@ def safe_eval(expr):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_text = (
-        "🎉 Welcome to Calculator Bot!\n\n"
+        "🎉 Welcome from Calculator Bot!\n\n"
         "✅ You can now use all calculator commands in DM.\n"
         "📌 Supported operations:\n"
         "➕ Addition (+)\n"
@@ -73,23 +69,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if result is not None:
         formatted_result = format_number(result)
         
-        # Format the display text with the custom emoji
-        display_text = f"<tg-emoji emoji-id=\"{FIRE_EMOJI_ID}\">🔥</tg-emoji> <code>{expr} = {formatted_result}</code>"
+        # Format the display text (removed fire emoji as requested)
+        display_text = f"<code>{expr} = {formatted_result}</code>"
         
         # Create keyboard with copy and delete buttons
-        # Since python-telegram-bot might not have icon_custom_emoji_id as a direct argument yet,
-        # we use api_kwargs to pass it to the Telegram Bot API.
+        # Using standard emojis for better compatibility and stability
         keyboard = [
             [
                 InlineKeyboardButton(
-                    text="Copy", 
-                    copy_text=CopyTextButton(text=str(result)),
-                    api_kwargs={"icon_custom_emoji_id": HEART_EMOJI_ID}
+                    text="📋 Copy", 
+                    copy_text=CopyTextButton(text=str(result))
                 ),
                 InlineKeyboardButton(
-                    text="Delete", 
-                    callback_data="delete",
-                    api_kwargs={"icon_custom_emoji_id": CROSS_EMOJI_ID}
+                    text="❌ Delete", 
+                    callback_data="delete"
                 )
             ]
         ]
