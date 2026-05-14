@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import asyncio
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyParameters
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from flask import Flask
 import threading
@@ -14,6 +14,7 @@ logging.basicConfig(
 )
 
 TOKEN = "8628273502:AAGttyvbz9KcGQyPq7EWe35TugWSNO9oOL4"
+CUSTOM_EMOJI_ID = "6239783660778693388" # The ID provided by the user
 
 def safe_eval(expr):
     """Safely evaluate a mathematical expression."""
@@ -56,25 +57,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if isinstance(result, float) and result.is_integer():
             result = int(result)
         
-        # Format the display text to show calculation steps
-        display_text = f"{expr} = {result}"
+        # Format the result with comma separator for thousands
+        formatted_result = "{:,}".format(result)
         
-        # Create keyboard with copy and delete buttons
-        # Note: 'copy_text' is a newer feature in some Telegram clients, 
-        # but for broad compatibility, we use callback for copy or provide it in monospace
-        # The user wants "one-click copy", so we'll use the newer InlineKeyboardButton feature if possible,
-        # but the python-telegram-bot version might need specific handling.
-        # We will use the copy_text parameter which is supported in Telegram Bot API 7.3+
+        # Format the display text with the custom emoji
+        # We use HTML to support the custom emoji tag
+        display_text = f"<tg-emoji emoji-id=\"{CUSTOM_EMOJI_ID}\">🔥</tg-emoji> {expr} = {formatted_result}"
         
+        # Create keyboard with copy and delete buttons as seen in the screenshot
         keyboard = [
             [
-                # This button type allows direct copying of the specified text
-                InlineKeyboardButton("Copy", copy_text=str(result)),
-                InlineKeyboardButton("Delete", callback_data="delete")
+                InlineKeyboardButton(f"📋 Copy", copy_text=str(result)),
+                InlineKeyboardButton(f"❌ Delete", callback_data="delete")
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(display_text, reply_markup=reply_markup)
+        await update.message.reply_text(display_text, reply_markup=reply_markup, parse_mode='HTML')
 
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
