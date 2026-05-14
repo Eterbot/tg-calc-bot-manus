@@ -15,9 +15,10 @@ logging.basicConfig(
 
 # Configuration
 TOKEN = os.getenv("BOT_TOKEN", "8628273502:AAGttyvbz9KcGQyPq7EWe35TugWSNO9oOL4")
-FIRE_EMOJI_ID = "6239783660778693388" # Using the one from previous code for the fire emoji
-HEART_EMOJI_ID = "6318764724917903167" # Heart for Copy
-CROSS_EMOJI_ID = "6239783660778693388" # Cross for Delete
+# Custom Emoji IDs provided by user
+HEART_EMOJI_ID = "6318764724917903167" # Heart for Copy button
+CROSS_EMOJI_ID = "6239783660778693388" # Cross for Delete button
+FIRE_EMOJI_ID = "6239783660778693388"  # Using this for the fire emoji in message as per previous setup
 
 def format_number(number):
     """Formats a number with thousand separators."""
@@ -74,22 +75,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Format the display text with the custom emoji
         # Using HTML to support the custom emoji tag
-        # The screenshot shows a fire-like emoji at the start
         display_text = f"<tg-emoji emoji-id=\"{FIRE_EMOJI_ID}\">🔥</tg-emoji> <code>{expr} = {formatted_result}</code>"
         
-        # Create keyboard with copy and delete buttons
-        # Note: Telegram supports custom emojis in button text for Premium users/bots if formatted correctly
-        # However, standard practice for buttons is using the emoji character. 
-        # To show custom emojis in buttons, we use the <tg-emoji> tag in the text if the client supports it,
-        # but for InlineKeyboardButton, we usually just use the emoji character + text.
-        # Based on the user's request to "put premium emoji in buttons", we will use the tag if possible or just the emoji.
-        # Actually, InlineKeyboardButton text doesn't support HTML tags. 
-        # But we can use the emoji character that represents the premium emoji.
-        
+        # Create keyboard with copy and delete buttons using icon_custom_emoji_id
+        # This is a new feature in Telegram Bot API that allows custom emojis in buttons
         keyboard = [
             [
-                InlineKeyboardButton(f"💖 Copy", copy_text=CopyTextButton(text=str(result))),
-                InlineKeyboardButton(f"❌ Delete", callback_data="delete")
+                InlineKeyboardButton(
+                    text="Copy", 
+                    copy_text=CopyTextButton(text=str(result)),
+                    icon_custom_emoji_id=HEART_EMOJI_ID
+                ),
+                InlineKeyboardButton(
+                    text="Delete", 
+                    callback_data="delete",
+                    icon_custom_emoji_id=CROSS_EMOJI_ID
+                )
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
