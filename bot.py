@@ -77,7 +77,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [
             [
                 InlineKeyboardButton(
-                    text="📋 Copy", 
+                    text="Copy", 
                     copy_text=CopyTextButton(text=str(result))
                 ),
                 InlineKeyboardButton(
