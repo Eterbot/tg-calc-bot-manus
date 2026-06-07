@@ -27,12 +27,12 @@ def format_number(number):
 
 def safe_eval(expr):
     """Safely evaluate a mathematical expression."""
-    # Allow only specific characters
-    if not re.match(r'^[\d\+\-\*\/\(\)\.\^ ]+$', expr):
+    # Allow only specific characters (including ÷ and ×)
+    if not re.match(r'^[\d\+\-\*\/\(\)\.\^ ÷×]+$', expr):
         return None
     try:
-        # Replace ^ with ** for Python power operator
-        clean_expr = expr.replace('^', '**')
+        # Replace mathematical symbols with Python operators
+        clean_expr = expr.replace('^', '**').replace('×', '*').replace('÷', '/')
         # Use a limited scope for eval
         result = eval(clean_expr, {"__builtins__": None}, {})
         return result
