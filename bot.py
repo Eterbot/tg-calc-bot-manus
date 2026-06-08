@@ -15,7 +15,7 @@ logging.basicConfig(
 )
 
 # Configuration
-TOKEN = os.getenv("BOT_TOKEN", "8628273502:AAGttyvbz9KcGQyPq7EWe35TugWSNO9oOL4")
+TOKEN = os.getenv("BOT_TOKEN", "8223310359:AAHBf7xXUCvd5PX-ojobMKCIVfGE2CwQEZ0")
 
 def format_number(number):
     """Formats a number with thousand separators."""
@@ -41,18 +41,16 @@ def safe_eval(expr):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_text = (
-        "🎉 Welcome from Calculator Bot!\n\n"
-        "✅ You can now use all calculator commands in DM, Groups, and via Inline Mode.\n"
-        "💼 Telegram Business is also supported!\n\n"
+        "🎉 Welcome from Mixx's Calculator Bot!\n"
+        "✅ You can now use all calculator commands in DM.\n"
         "📌 Supported operations:\n"
         "➕ Addition (+)\n"
         "➖ Subtraction (-)\n"
         "✖️ Multiplication (*)\n"
         "➗ Division (/)\n"
         "🔢 Parentheses ( )\n"
-        "⬆️ Exponentiation (^)\n\n"
-        "💡 Example: 2+3*5 or (10+2)^2\n"
-        "🔍 Inline Mode: Type @botname 2+2 in any chat!"
+        "⬆️ Exponentiation (^)\n"
+        "💡 Example: 2+3*5 or (10+2)^2"
     )
     if update.message:
         await update.message.reply_text(welcome_text)
